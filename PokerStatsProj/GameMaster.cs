@@ -5,18 +5,14 @@ namespace PokerStatsProj
 {
     internal class GameMaster
     {
-
         public int NumberOfPlayers { get; set; }
-        public string[] CommunityCards { get; set; }
+        public List<Card> CommunityCards { get; set; }
         public Dealer Dealer { get; set; }
         public Player[] Players { get; set; }
 
-
-
-
         public GameMaster(int numbOfPlayers = 4)
         {
-            CommunityCards = new string[5];
+            CommunityCards = new List<Card>();
             NumberOfPlayers = numbOfPlayers;
 
             Dealer = new Dealer();
@@ -25,12 +21,12 @@ namespace PokerStatsProj
 
         public void GiveHands()
         {
-            string[,] hands = Dealer.Deal(NumberOfPlayers);
+            Card[,] hands = Dealer.Deal(NumberOfPlayers);
 
             for (int i = 0; i < NumberOfPlayers; i++)
             {
-                Players[i].PocketCards[1] = hands[i, 1];
-                Players[i].PocketCards[1] = hands[i, 2];
+                Players[i].HoleCards[0] = hands[i, 0];
+                Players[i].HoleCards[1] = hands[i, 1];
             }
         }
         
@@ -39,7 +35,7 @@ namespace PokerStatsProj
             CommunityCards = Dealer.DealFlopTurnRiver(NumberOfPlayers);
         }
 
-        public void DisplayPlayerStats(int k) //As in, player 1-NumberOfPlayers (NOT zero-indexed)
+        public void DisplayPlayerStats(int k) //As in, player 1 to NumberOfPlayers (NOT zero-indexed)
         {
             Players[k].CalcStats(NumberOfPlayers, CommunityCards);
             Console.WriteLine("Player " + (k));
