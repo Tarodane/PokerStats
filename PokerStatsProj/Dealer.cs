@@ -14,18 +14,7 @@ namespace PokerStatsProj
 
         public Dealer()
         {
-            char[] suitsList = {'S', 'H', 'C', 'D'};
-            char[] numberingList = { 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K' };
-
-            DeckOfCards = new List<Card>();
-
-            for (int i = 0; i < suitsList.Length; i++)
-            {
-                for (int j = 0; j < numberingList.Length; j++)
-                {
-                    DeckOfCards.Add(new Card(numberingList[j], suitsList[i]));
-                }
-            }
+            DeckOfCards = CardLibrary.SetUpFxn();
         }
 
 
@@ -35,7 +24,7 @@ namespace PokerStatsProj
             for (int i = DeckOfCards.Count - 1; i >= 0; i--)
             {
                 var k = rng.Next(i+1);
-                (DeckOfCards[i], DeckOfCards[k])=(DeckOfCards[k], DeckOfCards[i]); //VS Suggested this, kinda cool
+                (DeckOfCards[i], DeckOfCards[k])=(DeckOfCards[k], DeckOfCards[i]);
             }
         }
 

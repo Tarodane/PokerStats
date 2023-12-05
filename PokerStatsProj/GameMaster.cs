@@ -8,11 +8,15 @@ namespace PokerStatsProj
         public int NumberOfPlayers { get; set; }
         public List<Card> CommunityCards { get; set; }
         public Dealer Dealer { get; set; }
-        public Player[] Players { get; set; }
+        public Player[] Players { get; set; } //Order of players maintains ranks
 
         public GameMaster(int numbOfPlayers = 4)
         {
             CommunityCards = new List<Card>();
+            if (numbOfPlayers < 1)
+            {
+                //Throw error?
+            }
             NumberOfPlayers = numbOfPlayers;
 
             Dealer = new Dealer();
@@ -57,6 +61,20 @@ namespace PokerStatsProj
                 }
                 Console.WriteLine();
             }
+        }
+
+        public void NewPlay()
+        {
+            CommunityCards.Clear();
+            Dealer.Shuffle();
+            GiveHands();
+            FlopTurnRiver();
+            DisplayAllPlayerStats();
+        }
+
+        public class Comparison
+        {
+
         }
 
     }
