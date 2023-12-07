@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PokerStatsProj
 {
-    internal class Dealer
+    public class Dealer
     {
         public List<Card> DeckOfCards { get; set; }
 

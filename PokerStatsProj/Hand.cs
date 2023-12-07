@@ -13,7 +13,7 @@ namespace PokerStatsProj
         Pair,
         TwoPair,
         ThreeKind,
-        Straight, 
+        Straight,
         Flush,
         FullHouse,
         FourKind,
@@ -22,10 +22,10 @@ namespace PokerStatsProj
     }
 
     //I want this class to be designed to hold exactly 5 cards. Most of the *proper*/*expected* functionality will degrade if there are not 5 cards
-    internal class Hand
+    public class Hand
 	{
         public List<Card> Cards { get; set; }
-        public int HandRank { get; set; }
+        public (int, List<int>) HandRank { get; private set; }
 
 		public Hand()
 		{
@@ -35,14 +35,15 @@ namespace PokerStatsProj
 		public Hand(Card card)
 		{
             Cards = new List<Card> { card };
-            HandRank = 0;
+            
         }
 
         public Hand(List<Card> cards)
         {
             Cards = cards;
             Cards.Sort();
-            //HandRank = GetHandRank(Cards);
+            if (cards.Count == 5)
+                HandRank = CalcHandRank(Cards);
         }
 
         public void SortCards()
@@ -70,12 +71,25 @@ namespace PokerStatsProj
             }
             return holderCard;
         }
-        
-        public static (int, List<int>) GetHandRank(List<Card> cards)
+
+        internal void SetHandRank()
+        {
+            HandRank = CalcHandRank(Cards);
+        }
+
+        internal (int, List<int>) CalcHandRank()
+        {
+            return CalcHandRank(Cards);
+        }
+
+        public static (int, List<int>) CalcHandRank(List<Card> cards)
         {
             List<int> distinctValsList = ListHandValues(cards).Distinct().ToList();
             distinctValsList.Sort();
             distinctValsList.Reverse();
+
+            if (distinctValsList.Count == 0) //In case we're given an empty hand
+                return (0, new List<int> { 0 });
 
             if (distinctValsList.Count > 4) {
                 bool flushBool = true;
@@ -172,15 +186,40 @@ namespace PokerStatsProj
                         firstPairCheck = i.Cards[0];
                 }
             }
-            return (0, new List<int> {0});
+            return (0, new List<int> {0}); //This line *should* never run in theory
         }
 
-        public static int IndicatorFxn(bool a)
+        
+        internal Hand CalcBetterHand(Hand otherHand)
         {
-            if (a)
-                return 1;
-            return 0;
+            return CalcBetterHand(this, otherHand);
         }
+
+        public static Hand CalcBetterHand(Hand lhs, Hand rhs)
+        {
+            if (lhs.HandRank == (null, null) && lhs.Cards.Count == 5)
+                lhs.SetHandRank();
+            if (rhs.HandRank == (null, null) && rhs.Cards.Count == 5)
+                rhs.SetHandRank();
+
+            if (lhs.HandRank.Item1 == rhs.HandRank.Item1)
+            {
+                for (int i = 0; i < lhs.HandRank.Item2.Count; i++)
+                {
+                    if (lhs.HandRank.Item2[i] > rhs.HandRank.Item2[i])
+                        return lhs;
+                    else if (lhs.HandRank.Item2[i] < rhs.HandRank.Item2[i])
+                        return rhs;
+                }
+                return lhs;
+            }
+            else if (lhs.HandRank.Item1 < rhs.HandRank.Item1)
+                return rhs;
+
+            return lhs;
+        }
+
+
 
         public static List<int> ListHandValues(List<Card> cards)
         {
@@ -212,6 +251,8 @@ namespace PokerStatsProj
             }
             return 0;
         }
+
+        public static int IndicatorFxn(bool a) { if (a) { return 1; } return 0; }
 
         public static Hand ParseString(string s) //Use when given a string representing a hand
         {
