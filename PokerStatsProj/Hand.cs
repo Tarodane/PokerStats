@@ -89,7 +89,7 @@ namespace PokerStatsProj
             distinctValsList.Reverse();
 
             if (distinctValsList.Count == 0) //In case we're given an empty hand
-                return (0, new List<int> { 0 });
+                return (-1, new List<int> { 0 });
 
             if (distinctValsList.Count > 4) {
                 bool flushBool = true;
@@ -97,26 +97,35 @@ namespace PokerStatsProj
 
                 for (int i = 0; i < cards.Count - 1; i++) //Inneficient programming, but passable at this small scale (n<=5), but any of these methods are inherently inefficient imo
                 {
-                    if (CardValToInt(cards[i]) != CardValToInt(cards[i+1]))
+                    if (distinctValsList[i] != (distinctValsList[i+1] + 1)) //Plus 1 because distinctValsList is in descending order
                         straightBool = false;
 
                     if (cards[i].Suit != cards[i+1].Suit)
                         flushBool = false;
                 }
 
+
+                var holderList = new List<int>{ 14, 5, 4, 3, 2 }; //Still need to code in that this specific situation considers ace as a 1, and 5 is the high card 
+
+                if (distinctValsList.All(x => holderList.Contains(x)))
+                {
+                    straightBool = true;
+                    //distinctValsList[holderList.Count - 1]
+                }
+
                 if (straightBool || flushBool)
                 {
                     //Straight = 4, Flush = 5, Straight Flush = 8, Royal Flush = 9
-                    return (IndicatorFxn(straightBool)*(int)PokerHand.Straight + IndicatorFxn(flushBool)*(int)PokerHand.Flush - IndicatorFxn(flushBool && straightBool && !(HighCard(cards).Value == 'A')),
+                    return (IndicatorFxn(straightBool)*(int)PokerHand.Straight + IndicatorFxn(flushBool)*(int)PokerHand.Flush - IndicatorFxn(flushBool && straightBool && (HighCard(cards).Value != 'A')),
                        distinctValsList); //Returns all 5 cards w/ high card first
                 }
-                return ((int)PokerHand.HighCard, distinctValsList);
+                return ((int)PokerHand.HighCard, distinctValsList); // Technically unnecessary if the above if-check wasn't there and all of its nested code ran normally
             }
 
             //I guess we break convention here and make some hands of size 2, 3, and 4
             if (distinctValsList.Count == 2) //Either a full house or a quad
             {
-                List<Hand> quadCheck = CardLibrary.ComboFunction(cards.Count, 4, cards);
+                List<Hand> quadCheck = CardLibrary.ComboFunction(0, 4, cards);
                 foreach (Hand i in quadCheck)
                 {
                     if (i.Cards[0].Value == i.Cards[1].Value && i.Cards[1].Value == i.Cards[2].Value && i.Cards[2].Value == i.Cards[3].Value)
@@ -130,7 +139,7 @@ namespace PokerStatsProj
 
             if (distinctValsList.Count != 4)
             {
-                List<Hand> tripCheck = CardLibrary.ComboFunction(cards.Count, 3, cards);
+                List<Hand> tripCheck = CardLibrary.ComboFunction(0, 3, cards);
                 foreach (Hand i in tripCheck)
                 {
                     if (i.Cards[0].Value == i.Cards[1].Value && i.Cards[1].Value == i.Cards[2].Value)
@@ -146,7 +155,7 @@ namespace PokerStatsProj
                             if (distinctValsList[0] != CardValToInt(i.Cards[0]))
                             {
                                 distinctValsList.Remove(CardValToInt(i.Cards[0]));
-                                distinctValsList.Insert(CardValToInt(i.Cards[0]), 0);
+                                distinctValsList.Insert(0, CardValToInt(i.Cards[0]));
                             }
                             return ((int)PokerHand.ThreeKind, distinctValsList);
                         }
@@ -154,7 +163,7 @@ namespace PokerStatsProj
                 }
             }
 
-            List<Hand> pairCheck = CardLibrary.ComboFunction(cards.Count, 2, cards);
+            List<Hand> pairCheck = CardLibrary.ComboFunction(0, 2, cards);
             Card firstPairCheck = new();
 
             foreach (Hand i in pairCheck)
@@ -166,27 +175,29 @@ namespace PokerStatsProj
                         if (distinctValsList[0] != CardValToInt(i.Cards[0]))
                         {
                             distinctValsList.Remove(CardValToInt(i.Cards[0]));
-                            distinctValsList.Insert(CardValToInt(i.Cards[0]), 0);
+                            distinctValsList.Insert(0, CardValToInt(i.Cards[0]));
                         }
                         return ((int)PokerHand.Pair, distinctValsList);
                     }
                     else if (firstPairCheck.Value != '\0')
                     {
                         List<int> pairOrder = new List<int> { CardValToInt(firstPairCheck), CardValToInt(i.Cards[0]) };
-                        if (pairOrder[0] < pairOrder[1])
-                            pairOrder.Reverse();
+                        pairOrder.Sort();
+                        pairOrder.Reverse();
+
                         foreach (int j in pairOrder)
                         {
-                            pairOrder.Remove(j);
-                            pairOrder.Insert(j, 0);
+                            distinctValsList.Remove(j);
+                            distinctValsList.Insert(0, j);
                         }
+
                         return ((int)PokerHand.TwoPair, distinctValsList);
                     }
                     else
                         firstPairCheck = i.Cards[0];
                 }
             }
-            return (0, new List<int> {0}); //This line *should* never run in theory
+            return (-2, new List<int> {0}); //This line *should* never run in theory
         }
 
         
@@ -223,12 +234,14 @@ namespace PokerStatsProj
 
         public static List<int> ListHandValues(List<Card> cards)
         {
-            List<int> result = new();
+            /*List<int> result = new();
             foreach (Card card in cards)
             {
                 result.Add(CardValToInt(card));
             }
             return result;
+*/
+            return cards.Select(x => CardValToInt(x)).ToList();
         }
 
         public static int CardValToInt(Card card)

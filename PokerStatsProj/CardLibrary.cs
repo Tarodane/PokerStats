@@ -7,19 +7,8 @@
         private bool LibraryMade { get; set; } //I don't want to recreate the library more than once
 
         public CardLibrary()
-        {
-            char[] suitsList = { 'S', 'H', 'C', 'D' };
-            char[] numberingList = { 'A', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K' };
-
+        { 
             BasicDeck = SetUpFxn();
-
-            for (int i = 0; i < suitsList.Length; i++)
-            {
-                for (int j = 0; j < numberingList.Length; j++)
-                {
-                    BasicDeck.Add(new Card(numberingList[j], suitsList[i]));
-                }
-            }
 
             EveryHand = new List<Hand>();
             LibraryMade = false;
@@ -73,7 +62,6 @@
             return percolatingHand;
         }
 
-
         public void MakeLibrary()
         {
             if (LibraryMade)
@@ -85,10 +73,18 @@
             LibraryMade = true;
 
             Console.WriteLine("Making Hands library");
+
             EveryHand = ComboFunction(0, 5, BasicDeck);
-            for (int i = 0;i < EveryHand.Count; i++)
+
+            for (int i = 0; i < EveryHand.Count; i++)
             {
                 EveryHand[i].SortCards();
+                EveryHand[i].SetHandRank();
+                
+/*                if (EveryHand[i].HandRank.Item1 == 8)
+                {
+                    Console.WriteLine(EveryHand[i].ToString());
+                }*/
             }
             Console.WriteLine("Finished creating library");
         }
